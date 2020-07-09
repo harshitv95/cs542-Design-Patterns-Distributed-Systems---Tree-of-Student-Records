@@ -7,7 +7,7 @@ public class StudentsBST implements StudentStoreI<StudentRecord> {
 	
 	protected static class StudentNode {
 		protected final StudentRecord student;
-		protected StudentRecord left, right;
+		protected StudentNode left, right;
 		protected StudentNode(StudentRecord student) {
 			this.student = student;
 		}
@@ -24,8 +24,19 @@ public class StudentsBST implements StudentStoreI<StudentRecord> {
 	}
 	
 	protected void insert(StudentNode node, StudentRecord student) {
-//		if (node.student.getbNumber() == student.getbNumber())
-//			node.student
+		if (node.student.getbNumber() == student.getbNumber())
+			node.student.addSkills(student.getSkills());
+		else if (student.getbNumber() < node.student.getbNumber()) {
+			if (node.left == null)
+				node.left = new StudentNode(student);
+			else
+				insert(node.left, student);
+		} else if (node.student.getbNumber() < student.getbNumber()) {
+			if (node.right == null)
+				node.right = new StudentNode(student);
+			else
+				insert(node.right, student);
+		}
 	}
 
 	@Override
