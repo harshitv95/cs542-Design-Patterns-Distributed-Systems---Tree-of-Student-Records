@@ -4,15 +4,16 @@ import studentskills.tree.StudentRecord;
 import studentskills.util.StudentStoreI;
 
 public class StudentsBST implements StudentStoreI<StudentRecord> {
-	
+
 	protected static class StudentNode {
 		protected final StudentRecord student;
 		protected StudentNode left, right;
+
 		protected StudentNode(StudentRecord student) {
 			this.student = student;
 		}
 	}
-	
+
 	protected StudentNode root;
 
 	@Override
@@ -22,7 +23,7 @@ public class StudentsBST implements StudentStoreI<StudentRecord> {
 		else
 			this.insert(this.root, student);
 	}
-	
+
 	protected void insert(StudentNode node, StudentRecord student) {
 		if (node.student.getbNumber() == student.getbNumber())
 			node.student.addSkills(student.getSkills());
@@ -41,7 +42,16 @@ public class StudentsBST implements StudentStoreI<StudentRecord> {
 
 	@Override
 	public StudentRecord retrieve(int id) {
-		// TODO Auto-generated method stub
+		StudentNode node = this.root;
+		while (node != null) {
+			if (node.student.getbNumber() == id)
+				return node.student;
+			
+			if (id < node.student.getbNumber())
+				node = node.left;
+			else
+				node = node.right;
+		}
 		return null;
 	}
 
