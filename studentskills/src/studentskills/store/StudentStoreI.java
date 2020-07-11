@@ -1,4 +1,4 @@
-package studentskills.util;
+package studentskills.store;
 
 import studentskills.tree.StudentRecord;
 
@@ -13,10 +13,10 @@ public interface StudentStoreI<S extends StudentRecord> {
 
 	void store(S student);
 
-	S retrieve(int id);
+	S retrieve(int recordId);
 
-	default boolean exists(int id) {
-		return this.retrieve(id) != null;
+	default boolean exists(int recordId) {
+		return this.retrieve(recordId) != null;
 	}
 
 }

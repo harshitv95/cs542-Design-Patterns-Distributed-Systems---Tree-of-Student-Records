@@ -1,9 +1,15 @@
 package studentskills.tree.bst;
 
+import studentskills.store.StudentStoreI;
 import studentskills.tree.StudentRecord;
-import studentskills.util.StudentStoreI;
 
 public class StudentsBST implements StudentStoreI<StudentRecord> {
+
+	protected final int treeId;
+
+	public StudentsBST(int treeId) {
+		this.treeId = treeId;
+	}
 
 	protected static class StudentNode {
 		protected final StudentRecord student;
@@ -46,13 +52,24 @@ public class StudentsBST implements StudentStoreI<StudentRecord> {
 		while (node != null) {
 			if (node.student.getbNumber() == id)
 				return node.student;
-			
+
 			if (id < node.student.getbNumber())
 				node = node.left;
 			else
 				node = node.right;
 		}
 		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.treeId;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof StudentsBST) && this.hashCode() == obj.hashCode()
+				&& this.root.equals(((StudentsBST) obj).root);
 	}
 
 }
