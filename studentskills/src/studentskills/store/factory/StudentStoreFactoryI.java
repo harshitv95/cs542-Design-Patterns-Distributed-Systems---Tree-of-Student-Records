@@ -13,7 +13,7 @@ import studentskills.tree.StudentRecord;
  * @param <S> extends {@link StudentRecord} - The type of the instance to be
  *            stored
  */
-public interface StudentStoreFactory<S extends StudentRecord> {
+public interface StudentStoreFactoryI<S extends StudentRecord> {
 	/**
 	 * Creates and returns an instance of a class implementing the {@link StudentStoreI}
 	 * interface. Every store needs a unique store ID, which makes the {@link }

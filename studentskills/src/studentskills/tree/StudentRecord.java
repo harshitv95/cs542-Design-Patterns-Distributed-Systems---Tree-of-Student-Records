@@ -4,11 +4,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, SubjectI<StudentRecord> {
 
-	public StudentRecord(double bNumber) {
+	public StudentRecord(int bNumber) {
 		this.bNumber = bNumber;
 	}
 
@@ -16,10 +15,8 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		this.bNumber = record.bNumber;
 		this.update(record, StudentRecordAction.MODIFY);
 	}
-
-	protected final UUID uuid = UUID.randomUUID();
-
-	protected final double bNumber;
+	
+	protected final int bNumber;
 	protected final Set<String> skills = new HashSet<String>();
 	protected String firstName, lastName, major;
 	protected double gpa;
@@ -56,11 +53,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		this.gpa = gpa;
 	}
 
-	public UUID getUuid() {
-		return uuid;
-	}
-
-	public double getbNumber() {
+	public int getbNumber() {
 		return bNumber;
 	}
 
@@ -79,12 +72,12 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 
 	@Override
 	public boolean equals(Object obj) {
-		return ((obj instanceof StudentRecord) && ((StudentRecord) obj).uuid.equals(this.uuid));
+		return ((obj instanceof StudentRecord) && ((StudentRecord) obj).getbNumber() == (this.getbNumber()));
 	}
 
 	@Override
 	public int hashCode() {
-		return this.uuid.hashCode();
+		return this.getbNumber();
 	}
 
 	@Override
@@ -108,11 +101,11 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	public void update(StudentRecord subject, StudentRecordAction action) {
 		switch (action) {
 		case MODIFY:
+			this.getSkills().clear();
+		case INSERT:
 			this.setFirstName(subject.getFirstName());
 			this.setLastName(subject.getLastName());
 			this.setMajor(subject.getMajor());
-			this.getSkills().clear();
-		case INSERT:
 			this.getSkills().addAll(subject.getSkills());
 			break;
 		default:
@@ -130,11 +123,34 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		if (this.getSkills().remove(oldVal))
 			this.getSkills().add((String) replacement);
 	}
+	
+	public void replaceValues(Map<Keys, Object> values) {
+		for (Keys key : Keys.values())
+			if (!key.equals(Keys.SKILLS))
+				key.setParam(this, values);
+		this.addSkills((Set<String>) values.get(Keys.SKILLS));
+		this.notifyObservers(StudentRecordAction.INSERT);
+	}
+	
+	public void replaceValues(StudentRecord replaceRecord) {
+		this.setFirstName(replaceRecord.getFirstName());
+		this.setLastName(replaceRecord.getLastName());
+		this.setMajor(replaceRecord.getMajor());
+		this.setGpa(replaceRecord.getGpa());
+		this.addSkills(replaceRecord.getSkills());
+	}
 
 	public void addSkills(Set<String> skills) {
 		this.skills.addAll(skills);
-		this.notifyObservers(StudentRecordAction.INSERT);
 	}
+
+	@Override
+	public String toString() {
+		return "{B#: "+this.getbNumber()+", skills: "+this.getSkills()+"}";
+	}
+
+
+
 
 	/**
 	 * An enum defining the minimum keys required in the params Map, to construct an

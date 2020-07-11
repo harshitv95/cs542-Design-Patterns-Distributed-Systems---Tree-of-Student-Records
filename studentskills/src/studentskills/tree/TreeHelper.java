@@ -6,30 +6,35 @@ import java.util.Map;
 import studentskills.factory.StudentFactory;
 import studentskills.store.StoreHelperI;
 import studentskills.store.StudentStoreI;
-import studentskills.store.factory.StudentStoreFactory;
+import studentskills.store.factory.StudentStoreFactoryI;
 import studentskills.tree.StudentRecord.Keys;
+import studentskills.util.Logger;
 
 public class TreeHelper implements StoreHelperI<StudentRecord> {
 	protected final Map<Integer, StudentStoreI<StudentRecord>> trees;
 	protected final StudentFactory studentFactory;
-	protected final StudentStoreFactory<StudentRecord> treeFactory;
+	protected final StudentStoreFactoryI<StudentRecord> treeFactory;
 	protected final int replicaCount;
 
-	public TreeHelper(int replicaCount, StudentStoreFactory<StudentRecord> treeFactory, StudentFactory studentFactory) {
+	public TreeHelper(int replicaCount, StudentStoreFactoryI<StudentRecord> treeFactory, StudentFactory studentFactory) {
 		this.replicaCount = replicaCount;
 		this.studentFactory = studentFactory;
 		this.treeFactory = treeFactory;
 		this.trees = new HashMap<>();
 		for (int i = 0; i < replicaCount; i++)
 			trees.put(i, this.treeFactory.create(i));
+		Logger.debugHigh("TreeHelper initialized");
 	}
 
 	@Override
 	public void store(Map<Keys, Object> studentParams) {
+		Logger.debugLow("Attempting to store new StudentRecord", studentParams);
 		if (this.replicaCount == 0)
 			return;
+		
 		StudentRecord[] records = new StudentRecord[this.replicaCount];
 		records[0] = this.studentFactory.create(studentParams);
+		Logger.debugMed("Created Student record Prototype", records[0]);
 
 		try {
 			// Creating all clones first, since if cloning fails at any point,
@@ -48,25 +53,29 @@ public class TreeHelper implements StoreHelperI<StudentRecord> {
 		}
 
 		for (int i = 0; i < this.replicaCount; i++)
-			this.trees.get(i).store(records[i]);
+			this.getStore(i).store(records[i]);
 	}
 
 	@Override
 	public void modify(int storeId, Map<Object, Object> modifyParams) {
-		if (storeId < 0 || storeId > this.replicaCount)
-			throw new IndexOutOfBoundsException(
-					"Invalid replica ID [" + storeId + "], Replica numbers range from 0-" + (this.replicaCount - 1));
 		if (!modifyParams.containsKey(Keys.B_NUMBER))
 			throw new RuntimeException(Keys.B_NUMBER + " is a required param for modifying student record");
+
 		int bNumber = (int) modifyParams.get(Keys.B_NUMBER);
-		this.trees.get(storeId).retrieve(bNumber).replaceValue(modifyParams.get("replaceValue"),
-				modifyParams.get("replacement"));
+		this.retrieve(storeId, bNumber).replaceValue(modifyParams.get("replaceValue"), modifyParams.get("replacement"));
 	}
 
 	@Override
 	public StudentRecord retrieve(int storeId, int studentId) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getStore(storeId).retrieve(studentId);
+	}
+
+	@Override
+	public StudentStoreI<StudentRecord> getStore(int storeId) {
+		if (storeId < 0 || storeId > this.replicaCount)
+			throw new IndexOutOfBoundsException(
+					"Invalid replica ID [" + storeId + "], Replica numbers range from 0-" + (this.replicaCount - 1));
+		return this.trees.get(storeId);
 	}
 
 }
