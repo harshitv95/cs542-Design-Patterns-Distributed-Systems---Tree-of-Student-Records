@@ -1,4 +1,8 @@
 /bin/
+**/BUILD/
+**/BUILD/*
 
 .project
 .classpath
+*.txt
+**/*.txt

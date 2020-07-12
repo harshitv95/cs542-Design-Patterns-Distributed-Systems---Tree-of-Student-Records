@@ -13,7 +13,7 @@ public class StudentRecordParser {
 
 	private final Pattern inputLinePattern = Pattern
 			.compile("([0-9]+):([a-zA-Z0-9]+),([a-zA-Z0-9]+),([0-9]+\\.{0,1}[0-9]*),([a-zA-Z0-9]+),(.+)");
-	private final Pattern modifyLinePattern = Pattern.compile("([0-9]+),([0-9]+),([a-zA-Z0-9]+):([a-zA-Z0-9]+)");
+	private final Pattern modifyLinePattern = Pattern.compile("([0-9]+),([0-9]+),([a-zA-Z0-9]*):([a-zA-Z0-9]*)");
 
 	/**
 	 * Processes input file line, validates its syntax, and returns a
@@ -38,15 +38,18 @@ public class StudentRecordParser {
 
 		Map<Keys, Object> params = new HashMap<>();
 		try {
-			params.put(Keys.B_NUMBER, Integer.parseInt(m.group(0)));
-			params.put(Keys.FIRST_NAME, m.group(1));
-			params.put(Keys.LAST_NAME, m.group(2));
-			params.put(Keys.GPA, Double.parseDouble(m.group(3)));
-			params.put(Keys.MAJOR, m.group(4));
-			params.put(Keys.SKILLS, new HashSet<String>(Arrays.asList(m.group(5).split(","))));
+			params.put(Keys.B_NUMBER, Integer.parseInt(m.group(1)));
+			params.put(Keys.FIRST_NAME, m.group(2));
+			params.put(Keys.LAST_NAME, m.group(3));
+			params.put(Keys.GPA, Double.parseDouble(m.group(4)));
+			params.put(Keys.MAJOR, m.group(5));
+			if (Arrays.asList(m.group(6).split(",")).size() > 10)
+				throw new RuntimeException(
+						"Number of skills for student [" + m.group(1) + "] was greater than 10. Expected 10 or less.");
+			params.put(Keys.SKILLS, new HashSet<String>(Arrays.asList(m.group(6).split(","))));
 		} catch (Exception e) {
-			Logger.error("Failed to parse input file line", e, line, e.getMessage());
-			throw e;
+			Logger.error("Failed to parse input file line", null, line, e.getMessage());
+			throw new RuntimeException("Failed to parse input file line", e);
 		}
 
 		return params;
@@ -75,13 +78,13 @@ public class StudentRecordParser {
 
 		Map<Object, Object> params = new HashMap<>();
 		try {
-			params.put("replicaId", Integer.parseInt(m.group(0)));
-			params.put(Keys.B_NUMBER, Integer.parseInt(m.group(1)));
-			params.put("replaceValue", m.group(2));
-			params.put("replacement", m.group(3));
+			params.put("replicaId", Integer.parseInt(m.group(1)));
+			params.put(Keys.B_NUMBER, Integer.parseInt(m.group(2)));
+			params.put("replaceValue", m.group(3));
+			params.put("replacement", m.group(4));
 		} catch (Exception e) {
-			Logger.error("Failed to parse modify file line", e, line, e.getMessage());
-			throw e;
+			Logger.error("Failed to parse modify file line", null, line, e.getMessage());
+			throw new RuntimeException("Failed to parse modify file line", e);
 		}
 
 		return params;

@@ -94,8 +94,10 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 		Logger.debugLow("Printing Tree " + this.getTreeId());
 		this.printNodes(this.root, res);
 	}
-	
+
 	protected void printNodes(StudentNode rootNode, Results res) {
+		if (rootNode == null)
+			return;
 		this.printNodes(rootNode.left, res);
 		res.printLn(rootNode.student.toString());
 		this.printNodes(rootNode.right, res);

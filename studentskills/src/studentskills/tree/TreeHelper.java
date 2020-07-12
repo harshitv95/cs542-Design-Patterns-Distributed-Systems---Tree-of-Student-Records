@@ -42,8 +42,9 @@ public class TreeHelper implements StoreHelperI<StudentRecord> {
 			// since the trees would then be inconsistent
 			for (int i = 1; i < this.replicaCount; i++) {
 				records[i] = this.studentFactory.create(records[0]);
+				Logger.debugMed("Cloned Student record from Prototype", records[i]);
 
-				for (int j = 0; j <= i; j++) {
+				for (int j = 0; j < i; j++) {
 					records[j].registerObserver(records[i]);
 					records[i].registerObserver(records[j]);
 				}

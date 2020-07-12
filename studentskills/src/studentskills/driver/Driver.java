@@ -37,7 +37,7 @@ public class Driver {
 		}
 
 		try {
-			new Logger(Logger.Level.from(Integer.parseInt(args[6])), args[5], Level.ERROR);
+			new Logger(Logger.Level.from(Integer.parseInt(args[6])), args[5], Level.WARN);
 		} catch (Exception e) {
 			System.err.println("Failed to initialize logger");
 			e.printStackTrace();
@@ -72,12 +72,22 @@ public class Driver {
 			while ((line = inputFile.poll()) != null) {
 				lineCount++;
 				inputParams = parser.parseStoreInput(line);
-				if (line != null)
+				if (inputParams != null)
 					storeHelper.store(inputParams);
 			}
 			if (lineCount == 0)
 				throw new RuntimeException("Input file was empty, resulted in empty trees");
 			Logger.info("Successfully processed [" + lineCount + "] lines from input file");
+			for (int i = 0; i < NUMBER_OF_REPLICAS; i++) {
+				Logger.info("Now Printing Tree " + i);
+				results[i].printLn("Tree " + i + " after reading input file:");
+				storeHelper.getStore(i).printAll(results[i]);
+				Logger.info("Print Tree " + i + " done\n");
+			}
+			
+			for (Results result : results)
+				result.flush();
+
 			line = null;
 			Map<Object, Object> modifyParams;
 			int storeId;
@@ -86,20 +96,25 @@ public class Driver {
 			while ((line = modifyFile.poll()) != null) {
 				lineCount++;
 				modifyParams = parser.parseStoreModify(line);
-				if (line != null) {
+				if (modifyParams != null) {
 					storeId = (int) modifyParams.remove("replicaId");
 					storeHelper.modify(storeId, modifyParams);
 				}
 			}
-			
+
 			if (lineCount == 0)
 				Logger.warn("Modify file was emoty, no modifications done to trees");
 			Logger.info("Successfully processed [" + lineCount + "] lines from modify file");
+
 			for (int i = 0; i < NUMBER_OF_REPLICAS; i++) {
 				Logger.info("Now Printing Tree " + i);
+				results[i].printLn("Tree " + i + " after reading modify file:");
 				storeHelper.getStore(i).printAll(results[i]);
 				Logger.info("Print Tree " + i + " done\n");
 			}
+
+			for (Results result : results)
+				result.flush();
 
 			Logger.info("Excecution completed successfully");
 		} catch (RuntimeException e) {

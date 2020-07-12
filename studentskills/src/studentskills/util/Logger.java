@@ -4,6 +4,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 
+/**
+ * A Simple Logging utility that lets users print logs, to a console and to an
+ * output file.
+ * 
+ * This is a Singleton class, and will only be initialized once.
+ * 
+ * @author Harshit Vadodaria
+ *
+ */
 public class Logger {
 
 	protected static Logger instance = null;
@@ -11,14 +20,29 @@ public class Logger {
 	protected final FileWriter fw;
 
 	/**
-	 * Initializes the logger with the provided level and log file
+	 * Initializes the logger with the provided level and log file. Call this
+	 * function only once, and either pass the instance around, or use the static
+	 * {@link #getInstance()} method to get the Logger's instance, and call the
+	 * {@link #log(Level, String, Object...)} method. A better approach would be to
+	 * call the various static logging methods available for each level:
+	 * <ul>
+	 * <li>{@link #error(String, Throwable, Object...)}</li>
+	 * <li>{@link #warn(String, Object...)}</li>
+	 * <li>{@link #info(String, Object...)}</li>
+	 * <li>{@link #config(String, Object...)}</li>
+	 * <li>{@link #debugLow(String, Object...)}</li>
+	 * <li>{@link #debugMed(String, Object...)}</li>
+	 * <li>{@link #debugHigh(String, Object...)}</li>
+	 * </ul>
 	 * 
 	 * @param level             Level to log at (Refer {@link Level})
 	 * @param logFile           Name of log file
 	 * @param logtoFileForLevel If this is not null, only the logs at this level
 	 *                          will be printed to the log file, else all the logs
-	 *                          will be printed to the log file. Regardless of this
-	 *                          parameter, all the logs are printed to the console.
+	 *                          (with levels equal to or less than the constructor
+	 *                          parameter {@code level}) will be printed to the log
+	 *                          file. Regardless of this parameter, all the logs are
+	 *                          printed to the console.
 	 * @throws IOException
 	 */
 	public Logger(Level level, String logFile, Level logtoFileForLevel) throws IOException {
@@ -38,9 +62,12 @@ public class Logger {
 
 	public void log(Level level, String msg, Object... args) {
 		if (level.toInt() <= this.level.toInt()) {
-			String logMsg = String.format("[%s][%s][%s][%s]", new Date(), level, msg,
-					args.length == 1 ? args[0] : args);
-			System.out.println(logMsg);
+			String logMsg = String.format("[%s][%s]%s %s", new Date(), level, msg,
+					(args == null || args.length == 0) ? "" : "(" + (args.length == 1 ? args[0] : args) + ")");
+			if (level == Level.ERROR)
+				System.err.println(logMsg);
+			else
+				System.out.println(logMsg);
 			if (this.logtoFileForLevel == null || this.logtoFileForLevel == level) {
 				try {
 					this.fw.write(logMsg + "\n");
@@ -100,7 +127,7 @@ public class Logger {
 			for (Level level : Level.values())
 				if (level.toInt() == levelInt)
 					return level;
-			return null;
+			throw new RuntimeException("Invalid log level number: [" + levelInt + "]");
 		}
 	}
 }

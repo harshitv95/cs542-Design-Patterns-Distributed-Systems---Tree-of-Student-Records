@@ -4,8 +4,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
+
+import studentskills.util.Logger;
 
 public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, SubjectI<StudentRecord> {
+
+	protected UUID uuid = UUID.randomUUID();
 
 	public StudentRecord(int bNumber) {
 		this.bNumber = bNumber;
@@ -15,9 +21,9 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		this.bNumber = record.bNumber;
 		this.update(record, StudentRecordAction.MODIFY);
 	}
-	
+
 	protected final int bNumber;
-	protected final Set<String> skills = new HashSet<String>();
+	protected final Set<String> skills = new TreeSet<>();
 	protected String firstName, lastName, major;
 	protected double gpa;
 
@@ -66,8 +72,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	@Override
 	public void notifyObservers(StudentRecordAction action) {
 		for (ObserverI<StudentRecord> observer : this.observers)
-			if (!this.equals(observer))
-				observer.update(this, action);
+			observer.update(this, action);
 	}
 
 	@Override
@@ -77,7 +82,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 
 	@Override
 	public int hashCode() {
-		return this.getbNumber();
+		return this.uuid.hashCode();
 	}
 
 	@Override
@@ -87,7 +92,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 
 	@Override
 	public void registerObserver(StudentRecord observer) {
-		if (observer != null && !observer.equals(this))
+		if (observer != null)
 			this.observers.add(observer);
 	}
 
@@ -114,16 +119,29 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	}
 
 	public void replaceValue(Object oldVal, Object replacement) {
-		if (this.getFirstName().equals(oldVal))
+		if (oldVal == null || oldVal.equals("")) {
+			Logger.warn("No value specified to be replaced", "replaceValue: \"\", replacement: " + replacement + "}");
+			return;
+		}
+		if (replacement == null || replacement.equals("")) {
+			Logger.warn("New replacement value not specified", "replaceValue: " + oldVal + ", replacement: \"\"}");
+			return;
+		}
+		
+		boolean modified = false;
+		if (modified = this.getFirstName().equals(oldVal))
 			this.setFirstName((String) replacement);
-		if (this.getLastName().equals(oldVal))
+		if (modified = this.getLastName().equals(oldVal))
 			this.setLastName((String) replacement);
-		if (this.getMajor().equals(oldVal))
+		if (modified = this.getMajor().equals(oldVal))
 			this.setMajor((String) replacement);
-		if (this.getSkills().remove(oldVal))
+		if (modified = this.getSkills().remove(oldVal))
 			this.getSkills().add((String) replacement);
+
+		if (modified)
+			this.notifyObservers(StudentRecordAction.MODIFY);
 	}
-	
+
 	public void replaceValues(Map<Keys, Object> values) {
 		for (Keys key : Keys.values())
 			if (!key.equals(Keys.SKILLS))
@@ -131,13 +149,14 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		this.addSkills((Set<String>) values.get(Keys.SKILLS));
 		this.notifyObservers(StudentRecordAction.INSERT);
 	}
-	
+
 	public void replaceValues(StudentRecord replaceRecord) {
 		this.setFirstName(replaceRecord.getFirstName());
 		this.setLastName(replaceRecord.getLastName());
 		this.setMajor(replaceRecord.getMajor());
 		this.setGpa(replaceRecord.getGpa());
 		this.addSkills(replaceRecord.getSkills());
+		this.notifyObservers(StudentRecordAction.INSERT);
 	}
 
 	public void addSkills(Set<String> skills) {
@@ -146,11 +165,8 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 
 	@Override
 	public String toString() {
-		return "{B#: "+this.getbNumber()+", skills: "+this.getSkills()+"}";
+		return "{B#: " + this.getbNumber() + ", skills: " + this.getSkills() + "}";
 	}
-
-
-
 
 	/**
 	 * An enum defining the minimum keys required in the params Map, to construct an
@@ -210,7 +226,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		 * the corresponding property of {@link StudentRecord}
 		 * 
 		 * @param student {@link StudentRecord}
-		 * @param params Map<{@link Keys}, Object>
+		 * @param params  Map<{@link Keys}, Object>
 		 */
 		public void setParam(StudentRecord student, Map<Keys, Object> params) {
 			if (!params.containsKey(this))
