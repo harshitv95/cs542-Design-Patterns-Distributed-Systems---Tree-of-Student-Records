@@ -16,14 +16,24 @@ public class TreeHelper implements StoreHelperI<StudentRecord> {
 	protected final StudentStoreFactoryI<StudentRecord> treeFactory;
 	protected final int replicaCount;
 
-	public TreeHelper(int replicaCount, StudentStoreFactoryI<StudentRecord> treeFactory, StudentFactory studentFactory) {
+	/**
+	 * Initializes the Treehelper used to construct {@code replicaCount} replicas of
+	 * a Tree. The tree is initialized using {@code treeFactory}, and a
+	 * StudentRecord is initialized using {@code studentFactory}
+	 * 
+	 * @param replicaCount
+	 * @param treeFactory
+	 * @param studentFactory
+	 */
+	public TreeHelper(int replicaCount, StudentStoreFactoryI<StudentRecord> treeFactory,
+			StudentFactory studentFactory) {
 		this.replicaCount = replicaCount;
 		this.studentFactory = studentFactory;
 		this.treeFactory = treeFactory;
 		this.trees = new HashMap<>();
 		for (int i = 0; i < replicaCount; i++)
 			trees.put(i, this.treeFactory.create(i));
-		Logger.debugHigh("TreeHelper initialized");
+		Logger.debugHigh("TreeHelper initialized for [" + replicaCount + "] replicas");
 	}
 
 	@Override
@@ -31,7 +41,7 @@ public class TreeHelper implements StoreHelperI<StudentRecord> {
 		Logger.debugLow("Attempting to store new StudentRecord", studentParams);
 		if (this.replicaCount == 0)
 			return;
-		
+
 		StudentRecord[] records = new StudentRecord[this.replicaCount];
 		records[0] = this.studentFactory.create(studentParams);
 		Logger.debugMed("Created Student record Prototype", records[0]);

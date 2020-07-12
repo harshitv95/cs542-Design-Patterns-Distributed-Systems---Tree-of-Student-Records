@@ -135,6 +135,8 @@ public class Driver {
 			} catch (IOException e) {
 				Logger.error("Exception while attempting to close modify file", e);
 			}
+			
+			Logger.closeLogger();
 		}
 
 	}

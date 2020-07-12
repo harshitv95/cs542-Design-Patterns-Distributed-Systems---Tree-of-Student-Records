@@ -9,15 +9,34 @@ import java.util.UUID;
 
 import studentskills.util.Logger;
 
+/**
+ * A POJO to store Student Information like B# (Student ID), FirstName,
+ * LastName, GPA, Major and student's skills. This StudentRecord is also an
+ * observable and subject, since multiple replicas of a Student Record will
+ * listen to each other's changes, and implement the same changes, to stay
+ * consistent
+ * 
+ * @author Harshit Vadodaria
+ *
+ */
 public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, SubjectI<StudentRecord> {
 
+	/**
+	 * Differentiates each instance of StudentRecord from another. Used in method
+	 * {@link #hashCode()}
+	 */
 	protected UUID uuid = UUID.randomUUID();
 
+	/**
+	 * @param bNumber int
+	 */
 	public StudentRecord(int bNumber) {
+		Logger.debugHigh("StudentRecord public constructor called [" + bNumber + "]");
 		this.bNumber = bNumber;
 	}
 
 	protected StudentRecord(StudentRecord record) {
+		Logger.debugHigh("StudentRecord protected constructor called [" + record + "]");
 		this.bNumber = record.bNumber;
 		this.update(record, StudentRecordAction.MODIFY);
 	}
@@ -71,6 +90,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 
 	@Override
 	public void notifyObservers(StudentRecordAction action) {
+		Logger.debugLow("Notifying all Observers", action);
 		for (ObserverI<StudentRecord> observer : this.observers)
 			observer.update(this, action);
 	}
@@ -92,8 +112,10 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 
 	@Override
 	public void registerObserver(StudentRecord observer) {
-		if (observer != null)
+		if (observer != null) {
+			Logger.info("New Observer registered");
 			this.observers.add(observer);
+		}
 	}
 
 	@Override
@@ -104,6 +126,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 
 	@Override
 	public void update(StudentRecord subject, StudentRecordAction action) {
+		Logger.debugLow("Received update from Subject StudentRecord for action " + action + "", subject);
 		switch (action) {
 		case MODIFY:
 			this.getSkills().clear();
@@ -127,7 +150,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 			Logger.warn("New replacement value not specified", "replaceValue: " + oldVal + ", replacement: \"\"}");
 			return;
 		}
-		
+		Logger.debugLow("Replacing " + oldVal + " in StudentRecord with " + replacement, this);
 		boolean modified = false;
 		if (modified = this.getFirstName().equals(oldVal))
 			this.setFirstName((String) replacement);
@@ -143,6 +166,8 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	}
 
 	public void replaceValues(Map<Keys, Object> values) {
+		Logger.debugLow("Updating current values of StudentRecord with new ones",
+				"{oldStudentRecord: " + this + ", newValues: " + values + "}");
 		for (Keys key : Keys.values())
 			if (!key.equals(Keys.SKILLS))
 				key.setParam(this, values);
@@ -151,6 +176,8 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	}
 
 	public void replaceValues(StudentRecord replaceRecord) {
+		Logger.debugLow("Updating current values of StudentRecord with new ones",
+				"{oldStudentRecord: " + this + ", newValues: " + replaceRecord + "}");
 		this.setFirstName(replaceRecord.getFirstName());
 		this.setLastName(replaceRecord.getLastName());
 		this.setMajor(replaceRecord.getMajor());

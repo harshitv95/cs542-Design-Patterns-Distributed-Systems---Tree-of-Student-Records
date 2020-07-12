@@ -109,6 +109,18 @@ public class Logger {
 		if (t != null)
 			t.printStackTrace();
 	}
+	
+	public void close() {
+		try {
+			this.fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void closeLogger() {
+		getInstance().close();
+	}
 
 	public static enum Level {
 		ERROR(1), WARN(2), INFO(3), CONFIG(4), DEBUG_LOW(5), DEBUG_MED(6), DEBUG_HIGH(7),;

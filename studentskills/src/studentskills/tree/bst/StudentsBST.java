@@ -8,17 +8,27 @@ import studentskills.util.Results;
 public class StudentsBST implements StudentTreeI<StudentRecord> {
 
 	protected final int treeId;
+	protected int count = 0;
 
 	public StudentsBST(int treeId) {
 		this.treeId = treeId;
+		Logger.debugHigh("Initialized StudentRecord BST, with Tree ID [" + treeId + "]");
 	}
 
+	/**
+	 * A simple Node to be stored in the tree. This has left and right children, and
+	 * a StudentRecord value
+	 * 
+	 * @author Harshit Vadodaria
+	 *
+	 */
 	protected static class StudentNode implements Comparable<StudentNode> {
 		protected final StudentRecord student;
 		protected StudentNode left, right;
 
 		protected StudentNode(StudentRecord student) {
 			this.student = student;
+			Logger.debugHigh("New Node created for student [" + student.getbNumber() + "]");
 		}
 
 		@Override
@@ -32,10 +42,14 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 		}
 	}
 
+	/**
+	 * The root of the tree
+	 */
 	protected StudentNode root;
 
 	@Override
 	public void store(StudentRecord student) {
+		Logger.debugLow("Inserting student [" + student.getbNumber() + "] in Tree [" + getTreeId() + "]");
 		if (this.root == null)
 			this.root = new StudentNode(student);
 		else
@@ -43,7 +57,7 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 	}
 
 	protected void insert(StudentNode node, StudentNode insert) {
-		if (node.student.equals(insert)) {
+		if (node.equals(insert)) {
 			node.student.replaceValues(insert.student);
 		} else if (insert.compareTo(node) < 0) {
 			if (node.left == null)
@@ -95,12 +109,23 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 		this.printNodes(this.root, res);
 	}
 
+	/**
+	 * Print all records in ascending order of B-Number, by recursively traversing
+	 * through the tree in In-Order fashion
+	 * 
+	 * @param rootNode StudentNode
+	 * @param res Results
+	 */
 	protected void printNodes(StudentNode rootNode, Results res) {
 		if (rootNode == null)
 			return;
 		this.printNodes(rootNode.left, res);
 		res.printLn(rootNode.student.toString());
 		this.printNodes(rootNode.right, res);
+	}
+
+	public String toString() {
+		return "{}";
 	}
 
 }

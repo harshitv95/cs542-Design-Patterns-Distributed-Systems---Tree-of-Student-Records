@@ -4,6 +4,7 @@ import java.util.Map;
 
 import studentskills.tree.StudentRecord;
 import studentskills.tree.StudentRecord.Keys;
+import studentskills.util.Logger;
 
 /**
  * A factory method to construct an instance of {@link StudentRecord}. See the
@@ -24,6 +25,7 @@ public class StudentFactory {
 	 * @return An instance of StudentRecord based on {@code params}
 	 */
 	public StudentRecord create(Map<Keys, Object> params) {
+		Logger.debugLow("Factory - Initializing new StudentRecord", params);
 		if (!params.containsKey(Keys.B_NUMBER))
 			throw new RuntimeException(
 					Keys.B_NUMBER.name() + " not found in params. It is mandatory to create a StudentRecord");
@@ -36,6 +38,7 @@ public class StudentFactory {
 	}
 
 	public StudentRecord create(StudentRecord referenceRecord) throws CloneNotSupportedException {
+		Logger.debugLow("Cloning Prototype StudentRecord", referenceRecord);
 		return referenceRecord.clone();
 	}
 
