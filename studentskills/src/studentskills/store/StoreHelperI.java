@@ -7,7 +7,7 @@ import studentskills.tree.StudentRecord.Keys;
 
 public interface StoreHelperI<S extends StudentRecord> {
 	/**
-	 * Saves a student record in the current Store
+	 * Saves a student record in all the replicas of the Store
 	 * 
 	 * @param studentParams int
 	 */

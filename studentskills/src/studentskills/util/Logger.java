@@ -2,7 +2,10 @@ package studentskills.util;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A Simple Logging utility that lets users print logs, to a console and to an
@@ -16,7 +19,8 @@ import java.util.Date;
 public class Logger {
 
 	protected static Logger instance = null;
-	protected final Level level, logtoFileForLevel;
+	protected final Level level;
+	protected final Set<Level> logtoFileForLevel;
 	protected final FileWriter fw;
 
 	/**
@@ -37,23 +41,28 @@ public class Logger {
 	 * 
 	 * @param level             Level to log at (Refer {@link Level})
 	 * @param logFile           Name of log file
-	 * @param logtoFileForLevel If this is not null, only the logs at this level
-	 *                          will be printed to the log file, else all the logs
-	 *                          (with levels equal to or less than the constructor
-	 *                          parameter {@code level}) will be printed to the log
-	 *                          file. Regardless of this parameter, all the logs are
-	 *                          printed to the console.
+	 * @param logtoFileForLevel If this is not empty, only the logs printed at any
+	 *                          of these levels will be printed to the log file,
+	 *                          else all the logs (with levels equal to or less than
+	 *                          the constructor parameter {@code level}) will be
+	 *                          printed to the log file. Regardless of this
+	 *                          parameter, all the logs are printed to the console.
 	 * @throws IOException
 	 */
-	public Logger(Level level, String logFile, Level logtoFileForLevel) throws IOException {
+	public Logger(Level level, String logFile, Level... logtoFileForLevel) throws IOException {
 		if (instance != null)
 			throw new RuntimeException("Logger already initialized, cannot initialize it again");
 		this.level = level;
 		this.fw = new FileWriter(logFile);
-		this.logtoFileForLevel = logtoFileForLevel;
+		this.logtoFileForLevel = new HashSet<>(Arrays.asList(logtoFileForLevel));
 		Logger.instance = this;
 	}
 
+	/**
+	 * Returns the singleton instance of this Logger
+	 * 
+	 * @return instance of this Logger
+	 */
 	public static Logger getInstance() {
 		if (Logger.instance == null)
 			throw new RuntimeException("Logger not initialized. Initialize it using the constructor new Logger(...)");
@@ -62,13 +71,13 @@ public class Logger {
 
 	public void log(Level level, String msg, Object... args) {
 		if (level.toInt() <= this.level.toInt()) {
-			String logMsg = String.format("[%s][%s]%s %s", new Date(), level, msg,
+			String logMsg = String.format("[%s][%s] %s %s", new Date(), level, msg,
 					(args == null || args.length == 0) ? "" : "(" + (args.length == 1 ? args[0] : args) + ")");
 			if (level == Level.ERROR)
 				System.err.println(logMsg);
 			else
 				System.out.println(logMsg);
-			if (this.logtoFileForLevel == null || this.logtoFileForLevel == level) {
+			if (this.logtoFileForLevel == null || this.logtoFileForLevel.contains(level)) {
 				try {
 					this.fw.write(logMsg + "\n");
 					this.fw.flush();
@@ -109,15 +118,16 @@ public class Logger {
 		if (t != null)
 			t.printStackTrace();
 	}
-	
+
 	public void close() {
 		try {
-			this.fw.close();
+			if (this.fw != null)
+				this.fw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void closeLogger() {
 		getInstance().close();
 	}

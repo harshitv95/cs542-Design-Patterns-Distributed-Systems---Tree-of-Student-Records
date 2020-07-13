@@ -37,7 +37,7 @@ public class Driver {
 		}
 
 		try {
-			new Logger(Logger.Level.from(Integer.parseInt(args[6])), args[5], Level.WARN);
+			new Logger(Logger.Level.from(Integer.parseInt(args[6])), args[5], Level.WARN, Level.ERROR);
 		} catch (Exception e) {
 			System.err.println("Failed to initialize logger");
 			e.printStackTrace();
@@ -84,7 +84,7 @@ public class Driver {
 				storeHelper.getStore(i).printAll(results[i]);
 				Logger.info("Print Tree " + i + " done\n");
 			}
-			
+
 			for (Results result : results)
 				result.flush();
 
@@ -124,18 +124,21 @@ public class Driver {
 		} finally {
 			Logger.debugLow("Closing Instances of file readers and writers");
 			for (Results result : results)
-				result.close();
+				if (result != null)
+					result.close();
 			try {
-				inputFile.close();
+				if (inputFile != null)
+					inputFile.close();
 			} catch (IOException e) {
 				Logger.error("Exception while attempting to close input file", e);
 			}
 			try {
-				modifyFile.close();
+				if (modifyFile != null)
+					modifyFile.close();
 			} catch (IOException e) {
 				Logger.error("Exception while attempting to close modify file", e);
 			}
-			
+
 			Logger.closeLogger();
 		}
 

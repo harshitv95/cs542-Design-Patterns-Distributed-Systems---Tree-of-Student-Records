@@ -38,7 +38,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	protected StudentRecord(StudentRecord record) {
 		Logger.debugHigh("StudentRecord protected constructor called [" + record + "]");
 		this.bNumber = record.bNumber;
-		this.update(record, StudentRecordAction.MODIFY);
+		this.update(record, StudentRecordEvent.MODIFY);
 	}
 
 	protected final int bNumber;
@@ -89,10 +89,10 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	protected final Set<ObserverI<StudentRecord>> observers = new HashSet<>();
 
 	@Override
-	public void notifyObservers(StudentRecordAction action) {
-		Logger.debugLow("Notifying all Observers", action);
+	public void notifyObservers(Object arg) {
+		Logger.debugLow("Notifying all Observers", arg);
 		for (ObserverI<StudentRecord> observer : this.observers)
-			observer.update(this, action);
+			observer.update(this, arg);
 	}
 
 	@Override
@@ -105,6 +105,10 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		return this.uuid.hashCode();
 	}
 
+	/**
+	 * Clones the current instance of this class, and returns the clone. It ensures
+	 * only required properties are cloned, and not the <b>Observers</b>
+	 */
 	@Override
 	public StudentRecord clone() throws CloneNotSupportedException {
 		return new StudentRecord(this);
@@ -113,7 +117,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	@Override
 	public void registerObserver(StudentRecord observer) {
 		if (observer != null) {
-			Logger.info("New Observer registered");
+			Logger.info("New Observer (" + observer.getbNumber() + ") registered for Student " + this.getbNumber());
 			this.observers.add(observer);
 		}
 	}
@@ -125,9 +129,14 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 	}
 
 	@Override
-	public void update(StudentRecord subject, StudentRecordAction action) {
-		Logger.debugLow("Received update from Subject StudentRecord for action " + action + "", subject);
-		switch (action) {
+	public void update(StudentRecord subject, Object obj) {
+		if (!(obj instanceof StudentRecordEvent)) {
+			Logger.warn("Invalid argument received to update, instead of event", obj);
+			throw new RuntimeException("Invalid argument received to update, instead of event: (" + obj + ")");
+		}
+		StudentRecordEvent event = (StudentRecordEvent) obj;
+		Logger.debugLow("Received update from Subject StudentRecord for action " + event + "", subject);
+		switch (event) {
 		case MODIFY:
 			this.getSkills().clear();
 		case INSERT:
@@ -137,7 +146,7 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 			this.getSkills().addAll(subject.getSkills());
 			break;
 		default:
-			throw new IllegalArgumentException("Invalid action [" + action + "]");
+			throw new IllegalArgumentException("Invalid action [" + event + "]");
 		}
 	}
 
@@ -152,30 +161,46 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		}
 		Logger.debugLow("Replacing " + oldVal + " in StudentRecord with " + replacement, this);
 		boolean modified = false;
-		if (modified = this.getFirstName().equals(oldVal))
+		if (modified = this.getFirstName().equals(oldVal)) {
+			Logger.debugMed("Modifying first name of Student with ID [" + this.getbNumber() + "] from ["
+					+ this.getFirstName() + "] to [" + replacement + "]");
 			this.setFirstName((String) replacement);
-		if (modified = this.getLastName().equals(oldVal))
+		}
+		if (modified = this.getLastName().equals(oldVal)) {
+			Logger.debugMed("Modifying last name of Student with ID [" + this.getbNumber() + "] from ["
+					+ this.getLastName() + "] to [" + replacement + "]");
 			this.setLastName((String) replacement);
-		if (modified = this.getMajor().equals(oldVal))
+		}
+		if (modified = this.getMajor().equals(oldVal)) {
+			Logger.debugMed("Modifying major of Student with ID [" + this.getbNumber() + "] from [" + this.getMajor()
+					+ "] to [" + replacement + "]");
 			this.setMajor((String) replacement);
-		if (modified = this.getSkills().remove(oldVal))
+		}
+		if (modified = this.getSkills().remove(oldVal)) {
+			Logger.debugMed("Modifying a Skill of Student with ID [" + this.getbNumber() + "] from [" + oldVal
+					+ "] to [" + replacement + "]");
 			this.getSkills().add((String) replacement);
+		}
 
 		if (modified)
-			this.notifyObservers(StudentRecordAction.MODIFY);
+			this.notifyObservers(StudentRecordEvent.MODIFY);
 	}
 
 	public void replaceValues(Map<Keys, Object> values) {
+		if (values == null)
+			return;
 		Logger.debugLow("Updating current values of StudentRecord with new ones",
 				"{oldStudentRecord: " + this + ", newValues: " + values + "}");
 		for (Keys key : Keys.values())
 			if (!key.equals(Keys.SKILLS))
 				key.setParam(this, values);
 		this.addSkills((Set<String>) values.get(Keys.SKILLS));
-		this.notifyObservers(StudentRecordAction.INSERT);
+		this.notifyObservers(StudentRecordEvent.INSERT);
 	}
 
 	public void replaceValues(StudentRecord replaceRecord) {
+		if (replaceRecord == null)
+			return;
 		Logger.debugLow("Updating current values of StudentRecord with new ones",
 				"{oldStudentRecord: " + this + ", newValues: " + replaceRecord + "}");
 		this.setFirstName(replaceRecord.getFirstName());
@@ -183,10 +208,14 @@ public class StudentRecord implements Cloneable, ObserverI<StudentRecord>, Subje
 		this.setMajor(replaceRecord.getMajor());
 		this.setGpa(replaceRecord.getGpa());
 		this.addSkills(replaceRecord.getSkills());
-		this.notifyObservers(StudentRecordAction.INSERT);
+		this.notifyObservers(StudentRecordEvent.INSERT);
 	}
 
 	public void addSkills(Set<String> skills) {
+		if (skills == null)
+			return;
+		Logger.debugMed("Adding new skills " + skills + " to Student with ID [" + this.getbNumber()
+				+ "] having existing skills: " + this.getSkills());
 		this.skills.addAll(skills);
 	}
 

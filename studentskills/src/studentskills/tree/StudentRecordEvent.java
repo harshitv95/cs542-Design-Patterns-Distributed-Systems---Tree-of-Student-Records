@@ -1,5 +1,5 @@
 package studentskills.tree;
 
-public enum StudentRecordAction {
+public enum StudentRecordEvent {
 	INSERT, MODIFY, CLONE;
 }

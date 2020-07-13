@@ -35,6 +35,13 @@ public interface StudentStoreI<S extends StudentRecord> {
 	void printAll(Results res);
 
 	/**
+	 * Returns the number of distinct students currently in the store
+	 * 
+	 * @return the count of distinct students currently in the store
+	 */
+	int size();
+
+	/**
 	 * Checks if the student with ID {@code recordId} exists in the store
 	 * 
 	 * @param recordId

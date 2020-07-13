@@ -50,9 +50,10 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 	@Override
 	public void store(StudentRecord student) {
 		Logger.debugLow("Inserting student [" + student.getbNumber() + "] in Tree [" + getTreeId() + "]");
-		if (this.root == null)
+		if (this.root == null) {
 			this.root = new StudentNode(student);
-		else
+			this.count++;
+		} else
 			this.insert(this.root, new StudentNode(student));
 	}
 
@@ -60,14 +61,16 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 		if (node.equals(insert)) {
 			node.student.replaceValues(insert.student);
 		} else if (insert.compareTo(node) < 0) {
-			if (node.left == null)
+			if (node.left == null) {
 				node.left = insert;
-			else
+				this.count++;
+			} else
 				insert(node.left, insert);
 		} else {
-			if (node.right == null)
+			if (node.right == null) {
 				node.right = insert;
-			else
+				this.count++;
+			} else
 				insert(node.right, insert);
 		}
 	}
@@ -114,7 +117,7 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 	 * through the tree in In-Order fashion
 	 * 
 	 * @param rootNode StudentNode
-	 * @param res Results
+	 * @param res      Results
 	 */
 	protected void printNodes(StudentNode rootNode, Results res) {
 		if (rootNode == null)
@@ -125,7 +128,12 @@ public class StudentsBST implements StudentTreeI<StudentRecord> {
 	}
 
 	public String toString() {
-		return "{}";
+		return "{treeID: " + this.getTreeId() + "}";
+	}
+
+	@Override
+	public int size() {
+		return this.count;
 	}
 
 }

@@ -73,7 +73,11 @@ public class TreeHelper implements StoreHelperI<StudentRecord> {
 			throw new RuntimeException(Keys.B_NUMBER + " is a required param for modifying student record");
 
 		int bNumber = (int) modifyParams.get(Keys.B_NUMBER);
-		this.retrieve(storeId, bNumber).replaceValue(modifyParams.get("replaceValue"), modifyParams.get("replacement"));
+		StudentRecord found = this.retrieve(storeId, bNumber);
+		if (found != null)
+			found.replaceValue(modifyParams.get("replaceValue"), modifyParams.get("replacement"));
+		else
+			Logger.warn("Attempted to modify student with B# ["+bNumber+"] that does not exist in records", modifyParams);
 	}
 
 	@Override
