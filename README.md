@@ -1,4 +1,4 @@
-# CSX43: Assignment 3
+# CS542: Assignment 3
 **Name: Harshit Vadodaria**
 
 -----------------------------------------------------------------------
@@ -65,16 +65,3 @@ The minimum level is ERROR, which is a mandatory level, since ERRORs are critica
 circumstances. The ERROR and WARN logs will also be printed to an error log file, whose absolute path needs to be
 provided as a command line parameter with key -Derror. This too is configurable in the call to the Logger's
 constructor.
-
-
-## Academic Honesty statement:
-
-"I have done this assignment completely on my own. I have not copied
-it, nor have I given my solution to anyone else. I understand that if
-I am involved in plagiarism or cheating an official form will be
-submitted to the Academic Honesty Committee of the Watson School to
-determine the action that needs to be taken. "
-
-Date: [July 12, 2020]
-
-Used 2 Slack Days.
